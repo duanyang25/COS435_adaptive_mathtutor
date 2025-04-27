@@ -92,9 +92,9 @@ class simulator:
         else:
             done_ = True
         
-        return (self.misconception_type, self.convo_turn, self.done, 
+        return [self.misconception_type, self.convo_turn, self.done, 
                 int(self.listen_to_feedback),int(self.problem_progress),
-                int(self.progress_delta), int(self.correct_solution)), int(reward), done_, "" , ""
+                int(self.progress_delta), int(self.correct_solution)], int(reward), done_, "" , ""
 
     def reset(self):
         # Copy from __init__
@@ -120,8 +120,8 @@ class simulator:
         self.correct_solution = 0
 
         self.listen_to_feedback_count = 0
-        return (self.misconception_type, self.convo_turn, self.done, 
+        return [self.misconception_type, self.convo_turn, self.done, 
                 int(self.listen_to_feedback),int(self.problem_progress),
-                int(self.progress_delta), int(self.correct_solution)), ""
+                int(self.progress_delta), int(self.correct_solution)], ""
     def render(self):
         pass
