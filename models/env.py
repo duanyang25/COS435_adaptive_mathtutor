@@ -32,6 +32,11 @@ class simulator:
         # "Telling": 2,
         # "Generic": 3,
         # self.action = [0,1,2,3]
+
+        self.observation_space = np.array([self.misconception_type, self.convo_turn, self.done, 
+                int(self.listen_to_feedback),int(self.problem_progress),
+                int(self.progress_delta), int(self.correct_solution)])
+        self.action_space = np.array([0,1,2,3])
         
         
     def step(self, action):
