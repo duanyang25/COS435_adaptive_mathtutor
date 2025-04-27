@@ -1,11 +1,13 @@
 import pandas as pd
 import numpy as np
+import gymnasium as gym
 
 class simulator:
     def __init__(self, dataset_path):
         
         # Normal Distribution, data within (0, 1)
-        self.intelligence_level = max(0, min(1, np.random.normal(loc=0.4, scale=0.2)))
+        # self.intelligence_level = max(0, min(1, np.random.normal(loc=0.4, scale=0.2)))
+        self.intelligence_level = np.random.choice([0.5,0.6],p=[0.6,0.4])
 
         # 5 types
         self.misconception_type = np.random.randint(low=1, high=6)
@@ -37,6 +39,8 @@ class simulator:
                 int(self.listen_to_feedback),int(self.problem_progress),
                 int(self.progress_delta), int(self.correct_solution)])
         self.action_space = np.array([0,1,2,3])
+
+        self._max_episode_steps = 118
         
         
     def step(self, action):
@@ -46,23 +50,24 @@ class simulator:
         # action affects probabilities
         factor = 0
         if action == 0:
-            factor = 0.05
-        elif action == 1:
             factor = 0.1
-        elif action == 2:
+        elif action == 1:
             factor = 0.2
+        elif action == 2:
+            factor = 0.3
         else:
             factor = 0.01
             
         # one more response
-        condition = np.random.choice([0,1], p=[1-min(1.0,self.len_prob[self.convo_turn]), min(1.0, self.len_prob[self.convo_turn])])
+        # condition = np.random.choice([0,1], p=[1-min(1.0,self.len_prob[self.convo_turn]), min(1.0, self.len_prob[self.convo_turn])])
+        condition = np.random.choice([0,1], p=[factor, 1-factor])
         if condition == 1:
             self.convo_turn = self.convo_turn + 1
             self.done = 0
         else:
             self.convo_turn = self.convo_turn + 1
             self.done = 1
-
+        
         # feedback
         prob = min(1, self.intelligence_level + factor)
         self.listen_to_feedback = np.random.choice([0,1], p=[1-prob, prob])
@@ -89,8 +94,27 @@ class simulator:
             self.problem_progress = 100
             self.progress_delta = 100 - old_problem_progress
 
-        # Reward Function
-        reward = self.correct_solution * 10 + self.done * 5 + self.listen_to_feedback * 2 + np.sign(self.progress_delta) * 1
+        # Reward Function, maybe consider the conversation length?: + (-0.1 * self.convo_turn)
+        
+        # "Focus": 0,
+        # "Probing": 1,
+        # "Telling": 2,
+        # "Generic": 3,
+        # self.action = [0,1,2,3]
+        # action penalty
+        penalty = 0
+        if action == 1:
+            penality = 1
+        # telling
+        if action == 2:
+            penalty = -1
+        # Generic
+        # elif action == 3:
+        #     penalty = -0.5
+        
+        # reward = self.correct_solution * 10 + self.done * 5 + self.listen_to_feedback * 2 + np.sign(self.progress_delta) * 1 + penalty
+        reward = self.correct_solution * 5 + penalty + (1 + self.done) # TD3 starts to learn something
+        # reward = self.correct_solution * 5 + penalty + (self.convo_turn + self.done)
 
         if self.done == 0:
             done_ = False
@@ -103,9 +127,12 @@ class simulator:
 
     def reset(self):
         # Copy from __init__
+
+        # should not change to a different student,
+        # otherwise, unstable learning and cannot converge due to stochasticity
         
         # Normal Distribution, data within (0, 1)
-        self.intelligence_level = max(0, min(1, np.random.normal(loc=0.4, scale=0.2)))
+        # self.intelligence_level = max(0, min(1, np.random.normal(loc=0.4, scale=0.2)))
 
         # 5 types
         self.misconception_type = np.random.randint(low=1, high=6)
