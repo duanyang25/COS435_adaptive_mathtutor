@@ -160,7 +160,7 @@ class simulator:
 
 
         
-        # reward = self.reward_func(self, penalty, action)
+        reward = self.reward_func(self, penalty, action)
 
 
         
